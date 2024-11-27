@@ -1,7 +1,16 @@
 from PIL import Image
-# TODO : Implement Blur Filter
-# TODO : Implement Sharpen Filter
-# TODO : Implement Contrast Filter
+#TODO : fourier filter
+
+sharp_kernal    = [[0, -1, 0], [-1, 5, -1], [0, -1, 0]]
+blur_kernal3by3 = [[1/9, 1/9, 1/9], [1/9, 1/9, 1/9], [1/9, 1/9, 1/9]]
+blur_kernel5by5 = [
+    [ 1/225,  4/225,  6/225,  4/225,  1/225],
+    [ 4/225, 16/225, 24/225, 16/225,  4/225],
+    [ 6/225, 24/225, 36/225, 24/225,  6/225],
+    [ 4/225, 16/225, 24/225, 16/225,  4/225],
+    [ 1/225,  4/225,  6/225,  4/225,  1/225]
+]
+
 
 def load_image(image_path) -> Image:
     """ Load an image from the specified file path """
@@ -64,7 +73,7 @@ def black_and_white(image: Image, threshold: int , use_luminance = True) -> Imag
     """ Convert the image to black and white
         - threshold: value to determine if the pixel is black or white """
     # Convert the image to grayscale
-    if not ( 0 <=threshold <= 256  ) :
+    if not (0 <= threshold <= 256):
         raise ValueError("Threshold must be between 0 and 256")
 
     new_image = Image.new("L", (image.width, image.height))
@@ -82,6 +91,31 @@ def black_and_white(image: Image, threshold: int , use_luminance = True) -> Imag
                 new_image.putpixel((i, j), 0)
     return new_image
 
+#TODO : use np and give the ability to change the degree of the blur
+def convolution(image: Image, kernel: list) -> Image:
+    """ Apply a convolution filter to the image
+        - kernel: 2D list with the kernel values."""
+    new_image = Image.new("RGB", (image.width, image.height))
+    new_image.load()
+    pixels = image.load()
+    radius = len(kernel)//2
+    # start from second pixel and end at the second last pixel
+    for i in range(radius ,  image.width-radius):
+        for j in range(radius , image.height-radius):
+            new_pixel = [0, 0, 0]
+            for x in range(-radius, radius+1 ):
+                for y in range(-radius, radius+1):
+                        r, g, b = pixels[i + x, j + y]
+                        new_pixel[0] += r * kernel[x + 1][y + 1]
+                        new_pixel[1] += g * kernel[x + 1][y + 1]
+                        new_pixel[2] += b * kernel[x + 1][y + 1]
+
+            new_image.putpixel((i, j), (int(new_pixel[0]), int(new_pixel[1]), int(new_pixel[2])))
+    return new_image
+
+
+
+
 def main():
     main_image = load_image("example.jpg")
     image1 = main_image.copy()
@@ -91,16 +125,18 @@ def main():
     image5 = main_image.copy()
     image6 = main_image.copy()
     image7 = main_image.copy()
+    image8 = main_image.copy()
+    image9 = main_image.copy()
 
     r1 = color_filter(image1, {"r":20, "g":0, "b":0})
     save_image(r1, "output.jpg")
-    print( "Image 1 saved")
+    print("Image 1 saved")
     r2 = brightness(image2, 50)
     save_image(r2, "output2.jpg")
-    print( "Image 2 saved")
+    print("Image 2 saved")
     r3 = color_filter(image3, {"r":0, "g":30, "b":0})
     save_image(r3, "output3.jpg")
-    print( "Image 3 saved")
+    print("Image 3 saved")
     r4 = gray(image4)
     save_image(r4, "output4.jpg")
     print( "Image 4 saved")
@@ -114,6 +150,16 @@ def main():
     r7 = black_and_white(image7, 128)
     save_image(r7, "output7.jpg")
     print( "Image 7 saved")
+
+    r8 = convolution(image8, sharp_kernal)
+    save_image(r8, "output8.jpg")
+    print( "Image 8 saved")
+
+    r9 = convolution(image9, blur_kernel5by5)
+    save_image(r9, "output9.jpg")
+    print( "Image 9 saved")
+
+
 
 
 
