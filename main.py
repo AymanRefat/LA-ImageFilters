@@ -1,5 +1,7 @@
 from PIL import Image
-
+# TODO : Implement Blur Filter
+# TODO : Implement Sharpen Filter
+# TODO : Implement Contrast Filter
 
 def load_image(image_path) -> Image:
     """ Load an image from the specified file path """
@@ -12,6 +14,7 @@ def color_filter(image: Image, rgb: dict) -> Image:
     """ Apply a red filter to the image
         - rgb: dictionary with the percentage to increase the color [ r : [0,100%] , g : [0,100%] , b : [0,100%] ]
     """
+
     pixels = image.load()
     for i in range(image.width):
         for j in range(image.height):
@@ -22,8 +25,17 @@ def color_filter(image: Image, rgb: dict) -> Image:
 
 def brightness(image: Image, brightness: float) -> Image:
     """ Apply a brightness filter to the image """
+    if brightness < 0:
+        raise ValueError("Brightness must be a positive number")
     return color_filter(image, {"r": brightness, "g": brightness, "b": brightness})
 
+
+def darkness(image: Image, darkness: float) -> Image:
+    """ Apply a darkness filter to the image
+        - darkness: percentage to decrease [0,100%]"""
+    if 0 <= darkness <= 100:
+        raise ValueError("Darkness must be a positive number")
+    return color_filter(image, {"r": -darkness, "g": -darkness, "b": -darkness})
 
 # \text{Luminance} = 0.299 \times R + 0.587 \times G + 0.114 \times B
 def black_and_white(image: Image, use_luminance: bool = True) -> Image:
@@ -49,17 +61,25 @@ def save_image(image: Image, save_path: str) -> None:
 
 def main():
     main_image = load_image("example.jpg")
-    image = main_image.copy()
-    # r1 = color_filter(image, {"r":20, "g":0, "b":0})
-    # r2 = brightness(image, 150)
-    # r3 = color_filter(image, {"r":0, "g":30, "b":0})
-    # save_image(r1, "output.jpg")
-    # save_image(r2, "output2.jpg")
-    # save_image(r3, "output3.jpg")
-    r4 = black_and_white(image)
+    image1 = main_image.copy()
+    image2 = main_image.copy()
+    image3 = main_image.copy()
+    image4 = main_image.copy()
+    image5 = main_image.copy()
+    image6 = main_image.copy()
+
+    r1 = color_filter(image1, {"r":20, "g":0, "b":0})
+    save_image(r1, "output.jpg")
+    r2 = brightness(image2, 50)
+    save_image(r2, "output2.jpg")
+    r3 = color_filter(image3, {"r":0, "g":30, "b":0})
+    save_image(r3, "output3.jpg")
+    r4 = black_and_white(image4)
     save_image(r4, "output4.jpg")
-    r5 = black_and_white(image, False)
+    r5 = black_and_white(image5, False)
     save_image(r5, "output5.jpg")
+    r6 = darkness(image6, 10)
+    save_image(r6, "output6.jpg")
 
 
 if __name__ == "__main__":
