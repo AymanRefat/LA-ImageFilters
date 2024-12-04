@@ -1,21 +1,23 @@
 from PIL import Image
 import numpy as np
-# Define kernels for image filtering
-sharp_kernal = [[0, -1, 0], [-1, 5, -1], [0, -1, 0]]  # Kernel for sharpening
-blur_kernel101by101 = np.ones((101, 101)) / 101**2  # 101x101 blur kernel
+sharp_kernal = [[0, -1, 0], [-1, 5, -1], [0, -1, 0]]
+blur_kernel101by101 = np.ones((101, 101)) / 101**2
 
 def load_image(image_path) -> Image:
     """ Load an image from the specified file path """
-    image = Image.open(image_path)  # Open the image file
-    image.load()  # Ensure the image is loaded into memory
-    return image  # Return the loaded image
+    image = Image.open(image_path)
+    image.load()
+    return image
 
 def color_filter(image: Image, rgb: dict) -> Image:
     """
     Apply a color filter to the image.
     - rgb: dictionary with percentages to adjust the colors (r, g, b).
+    - r: percentage to adjust the red channel.
+    - g: percentage to adjust the green channel.
+    - b: percentage to adjust the blue channel
     """
-    pixels = image.load()  # Access the image pixels
+    pixels = image.load()
     for i in range(image.width):
         for j in range(image.height):
             r, g, b = pixels[i, j]  # Get the current pixel values
@@ -31,6 +33,7 @@ def brightness(image: Image, brightness: float , use_lumiance:bool = True) -> Im
     """
     Apply a brightness filter to the image.
     - brightness: positive percentage to increase brightness.
+    - use_lumiance: if True, use luminance formula; otherwise, apply the same increase to all channels.
     """
     if brightness < 0:
         raise ValueError("Brightness must be a positive number")
@@ -46,6 +49,7 @@ def darkness(image: Image, darkness: float , use_lumiance: bool = True) -> Image
     """
     Apply a darkness filter to the image.
     - darkness: percentage to decrease brightness in each channel.
+    - use_lumiance: if True, use luminance formula; otherwise, apply the same decrease to all channels.
     """
     if not (0 <= darkness <= 100):
         raise ValueError("Darkness must be between 0 and 100")
@@ -66,7 +70,7 @@ def gray(image: Image, use_luminance: bool = True) -> Image:
     new_image.load()
     for i in range(image.width):
         for j in range(image.height):
-            r, g, b = image.getpixel((i, j))  # Get the RGB values of the pixel
+            r, g, b = image.getpixel((i, j))
             # Calculate luminance or average based on the parameter
             luminance = int(0.299 * r + 0.587 * g + 0.114 * b) if use_luminance else int((r + g + b) / 3)
             new_image.putpixel((i, j), luminance)  # Set the grayscale value
@@ -88,7 +92,7 @@ def black_and_white(image: Image, threshold: int, use_luminance=True) -> Image:
     new_image.load()
     for i in range(image.width):
         for j in range(image.height):
-            r, g, b = image.getpixel((i, j))  # Get the RGB values
+            r, g, b = image.getpixel((i, j))
             # Calculate luminance or average based on the parameter
             luminance = int(0.299 * r + 0.587 * g + 0.114 * b) if use_luminance else (r + g + b) // 3
             # Compare with threshold and set pixel to either black or white
@@ -103,11 +107,11 @@ def convolution(image: Image, kernel: list) -> Image:
     new_image = Image.new("RGB", (image.width, image.height))  # Create an output image
     new_image.load()
     pixels = image.load()
-    radius = len(kernel) // 2  # Calculate the kernel radius
+    radius = len(kernel) // 2
     # Iterate through each pixel, avoiding the borders
     for i in range(radius, image.width - radius):
         for j in range(radius, image.height - radius):
-            new_pixel = [0, 0, 0]  # Initialize new pixel values
+            new_pixel = [0, 0, 0]
             for x in range(-radius, radius + 1):
                 for y in range(-radius, radius + 1):
                     r, g, b = pixels[i + x, j + y]  # Get the neighboring pixel values
@@ -116,9 +120,8 @@ def convolution(image: Image, kernel: list) -> Image:
                     new_pixel[0] += r * weight
                     new_pixel[1] += g * weight
                     new_pixel[2] += b * weight
-            # Set the calculated pixel values to the output image
             new_image.putpixel((i, j), tuple(map(int, new_pixel)))
-    return new_image  # Return the filtered image
+    return new_image  # Return the modified image
 
 def faster_convolution(image: Image, kernel: list) -> Image:
         """
