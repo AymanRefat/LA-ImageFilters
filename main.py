@@ -106,11 +106,14 @@ def convolution(image: Image, kernel: list) -> Image:
     """
     new_image = Image.new("RGB", (image.width, image.height))  # Create an output image
     new_image.load()
-    pixels = image.load()
     radius = len(kernel) // 2
+    # Pad the image
+    padded_image = Image.new("RGB", (image.width + 2 * radius, image.height + 2 * radius))
+    padded_image.paste(image, (radius, radius))
+    pixels = padded_image.load()
     # Iterate through each pixel, avoiding the borders
-    for i in range(radius, image.width - radius):
-        for j in range(radius, image.height - radius):
+    for i in range(radius, image.width + radius):
+        for j in range(radius, image.height + radius):
             new_pixel = [0, 0, 0]
             for x in range(-radius, radius + 1):
                 for y in range(-radius, radius + 1):
@@ -120,7 +123,7 @@ def convolution(image: Image, kernel: list) -> Image:
                     new_pixel[0] += r * weight
                     new_pixel[1] += g * weight
                     new_pixel[2] += b * weight
-            new_image.putpixel((i, j), tuple(map(int, new_pixel)))
+            new_image.putpixel((i-radius, j-radius), tuple(map(int, new_pixel)))
     return new_image  # Return the modified image
 
 def faster_convolution(image: Image, kernel: list) -> Image:
