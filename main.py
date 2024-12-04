@@ -27,23 +27,32 @@ def color_filter(image: Image, rgb: dict) -> Image:
             )
     return image  # Return the modified image
 
-def brightness(image: Image, brightness: float) -> Image:
+def brightness(image: Image, brightness: float , use_lumiance:bool = True) -> Image:
     """
     Apply a brightness filter to the image.
     - brightness: positive percentage to increase brightness.
     """
     if brightness < 0:
         raise ValueError("Brightness must be a positive number")
+
+    if ( use_lumiance) :
+        # Use the luminance formula to calculate the brightness
+        return color_filter(image, {"r": brightness*.299, "g": brightness*.587, "b": brightness*.114})
+
     # Use the color filter function to apply the same increase to all channels
     return color_filter(image, {"r": brightness, "g": brightness, "b": brightness})
 
-def darkness(image: Image, darkness: float) -> Image:
+def darkness(image: Image, darkness: float , use_lumiance: bool = True) -> Image:
     """
     Apply a darkness filter to the image.
     - darkness: percentage to decrease brightness in each channel.
     """
     if not (0 <= darkness <= 100):
         raise ValueError("Darkness must be between 0 and 100")
+
+    if (use_lumiance) :
+        # Use the luminance formula to calculate the darkness
+        return color_filter(image, {"r": -darkness*.299, "g": -darkness*.587, "b": -darkness*.114})
     # Use a negative percentage to reduce brightness in all channels
     return color_filter(image, {"r": -darkness, "g": -darkness, "b": -darkness})
 
@@ -150,7 +159,7 @@ def main():
     """ Main function to demonstrate the image processing operations """
     main_image = load_image("example.jpg")  # Load the input image
     # Create copies of the main image for different operations
-    image1, image2, image3, image4, image5, image6, image7, image8, image9 = [main_image.copy() for _ in range(9)]
+    image1, image2, image3, image4, image5, image6, image7, image8, image9 , image10 , image11 = [main_image.copy() for _ in range(11)]
 
     # Apply color filter (increase red channel by 20%)
     save_image(color_filter(image1, {"r": 20, "g": 0, "b": 0}), "output.jpg")
@@ -159,6 +168,10 @@ def main():
     # Apply brightness filter (increase brightness by 50%)
     save_image(brightness(image2, 50), "output2.jpg")
     print("Image 2 saved")
+
+    #apply brightness filter + luminance
+    save_image(brightness(image10, 50, True), "output2_luminance.jpg")
+    print("Image 2 saved with luminance")
 
     # Apply color filter (increase green channel by 30%)
     save_image(color_filter(image3, {"r": 0, "g": 30, "b": 0}), "output3.jpg")
@@ -176,6 +189,10 @@ def main():
     save_image(darkness(image6, 50), "output6.jpg")
     print("Image 6 saved")
 
+    # Apply darkness filter + luminance
+    save_image(darkness(image11, 50, True), "output6_luminance.jpg")
+    print("Image 6 saved with luminance")
+
     # Convert image to black and white with threshold of 128
     save_image(black_and_white(image7, 128), "output7.jpg")
     print("Image 7 saved")
@@ -185,7 +202,7 @@ def main():
     print("Image 8 saved")
 
     # Apply 101x101 blur filter using convolution
-    save_image(faster_convolution(image9 , blur_kernel101by101), "output9.jpg")
+    save_image(faster_convolution(image9, blur_kernel101by101), "output9.jpg")
     print("Image 9 saved")
 
 if __name__ == "__main__":
